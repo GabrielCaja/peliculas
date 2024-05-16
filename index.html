@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+    <link rel="stylesheet" href="Desarollo.css">
+    <title>Document</title>
+    <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-database.js"></script>
+</head>
+
+<body>
+
+    <div id="contUsr">
+        <div id="entrada">
+            <h3 style="margin: 10px;">LOGIN</h3><br>
+            <label for="usuario">Nombre usuario: </label>
+            <input type="text" id="username">
+            <button id="btnCambiarUsr">Acceder</button>
+        </div>
+
+        <div id="Perfil">
+            <h3 style="margin: 10px;" id="usr1">USUARIO</h3>
+            <div id="usr" style="display: inline; margin: 10px;"></div>
+            <div id="anadirBtn"></div>
+        </div>
+    </div>
+
+    <div id="contenido">
+        <div id="peliculas">
+            <div id="filtrarPel" style="margin: 10px;">
+                <h3>PELICULAS</h3>
+                <input type="text" placeholder="Nombre pelicula" id="nomPel">
+                <button id="btnFiltrar" onclick="pide()">Filtrar</button>
+                <div id="listPel"></div>
+            </div>
+        </div>
+        <div id="favoritas">
+            <h3 style="text-align: center;margin: 10px;">FAVORITAS</h3>
+            <button id="guardarFav" onclick="guardaFavoritas()">Guardar favoritas</button>
+            <div id="pelfav"></div>
+
+
+        </div>
+
+        <div id="documentacion">
+            <button id="doc" onclick="mostrarDoc()">DOCUMENTACION</button>
+            <div id="info">
+                <ul><strong>Estructura de codigo</strong></ul>
+                <li style="margin: 10px;">La estructura se divide en tres contenedores: uno que es para el login, otro
+                    para el listado
+                    de peliculas y el otro para la lista de favoritos. Luego la pagina que se crea a la hora de querer
+                    ver más información
+                    de una pelicula, también tiene un layout en grid, divido por el titulo, a la izquierda la imagen de
+                    cartelera de la pelicula
+                    y a la derecha los datos.
+                </li>
+                <ul><strong> Problemas encontrados y soluciones</strong></ul>
+                <li style="margin: 10px;">Problemas que he encontrado ha sido sobre todo a la hora de almacenar los
+                    datos en firebase o en localStorage.
+                    En el caso de firebase, no sabia como mezclar un script de tipo module, que es el que se usa para
+                    firebase
+                    con un script normal.
+                    En el caso de localStorage se me guardan los datos pero no cambia la sesion en funcion del usuario,
+                    porque cada
+                    vez que lo hago con el getItem el dato me aparece como null y no me devuelve las peliculas del
+                    usuario.
+                </li>
+                <ul><strong>Posibles mejoras</strong> </ul>
+                <li style="margin: 10px;">Las mejoras que yo añadiria serían mejorar el diseño y el CSS y añadir lo de
+                    firebase.</li>
+            </div>
+        </div>
+
+    </div>
+
+
+
+
+    <script>
+
+        function mostrarDoc() {
+            const info = document.getElementById('info');
+            info.style.display = 'inline ';
+
+            const btn = document.createElement('button');
+            btn.textContent = 'Cerrar';
+            btn.style.cssText = 'margin:10px; background-color: aqua;'
+            info.appendChild(btn);
+            btn.addEventListener('click', () => {
+                info.style.display = 'none';
+                info.removeChild(btn);
+            })
+        }
+
+        const form = document.querySelector('form');
+        const usernameInput = document.querySelector('#username');
+        const loginButton = document.querySelector('#btnCambiarUsr');
+        const divFav = document.getElementById('pelfav');
+        const usuario = document.getElementById('usr');
+        const user1 = document.getElementById('usr1');
+        const anadirBtn = document.getElementById('anadirBtn');
+        const guardarFav = document.getElementById('guardarFav');
+        const nomPel = document.getElementById('listPel');
+
+        user1.style.display = 'none';
+
+        loginButton.addEventListener('click', (event) => {
+            event.preventDefault();
+
+            const username = usernameInput.value;
+
+            if (!username == " ") {
+                localStorage.setItem('Usuario', username);
+
+            }
+
+            if (username == localStorage.getItem('Usuario')) {
+                const usuario = localStorage.getItem('Usuario');
+                usernameInput.value = usuario;
+                console.log('a');
+            }
+
+
+            user1.style.display = 'inline-block';
+
+            anadirBtn.style.display = 'inline-block';
+
+            usuario.innerHTML = `<strong>${usernameInput.value}</strong>`;
+
+            const entrada = document.getElementById('entrada');
+
+            const btnUsr = document.getElementById('btnCambiarUsr');
+
+            entrada.style.display = 'none';
+
+            const mibtn = document.createElement('button');
+            mibtn.textContent = 'Cambiar usuario';
+            mibtn.style.cssText = "background-color: aqua; margin:10px;font-size:15px;";
+            anadirBtn.appendChild(mibtn);
+
+            mibtn.addEventListener('click', (event) => {
+                user1.style.display = 'none';
+                entrada.style.display = 'inline-block';
+                anadirBtn.style.display = 'none';
+                usuario.textContent = `Actual: ${usernameInput.value}`
+                usuario.style.display = 'inline-block';
+                anadirBtn.removeChild(mibtn);
+            })
+
+            divFav.innerHTML = '';
+            nomPel.innerHTML = '';
+
+            let peliculasFavoritas = localStorage.getItem(JSON.stringify(usernameInput.value));
+            console.log(peliculasFavoritas);
+          
+
+            if (usernameInput.value == peliculasFavoritas) {
+                const data = localStorage.getItem(JSON.parse(datos))
+                divFav.innerHTML = data;
+                
+            }
+
+
+        })
+
+
+
+        function guardaFavoritas() {
+
+            const datos = {
+                'peliculas': divFav.textContent
+            }
+            
+            localStorage.setItem(usernameInput.value, JSON.stringify(datos));
+
+
+        }
+
+        function pide() {
+            const valor = document.getElementById('nomPel').value;
+            const espacio = document.getElementById('listPel');
+            let pagina;
+            if (pagina != "number") {
+                pagina = 1;
+            }
+
+
+
+            espacio.innerHTML = '';
+
+            fetch(`https://api.themoviedb.org/3/search/movie?api_key=989a7dc82aba988e71ea7e90c9d08a5c&page=${pagina}&language=es-ES&query=${valor}`)
+                .then(res => res.json())
+                .then(res => {
+                    const resultados = res.results;
+                    const titulos = resultados.map(resultado => resultado.title);
+                    const listaTitulos = document.createElement('ul');
+
+
+                    for (let i = 0; i < res.total_pages; i++) {
+                        const btnPag = document.createElement('button');
+                        btnPag.id = (i + 1);
+                        btnPag.textContent = i + 1;
+                        btnPag.style.cssText = "background-color: aqua; border: 1px solid black; margin: 10px;"
+                        espacio.appendChild(btnPag);
+                        btnPag.addEventListener("click", cambiarPag)
+                    }
+
+                    for (let titulo of titulos) {
+                        const item = document.createElement('li');
+                        const btnFav = document.createElement('button');
+                        item.textContent = titulo;
+                        btnFav.textContent = 'Añadir favoritos';
+                        btnFav.style.cssText = "background-color: aqua; border: 1px solid black; margin: 10px;";
+                        btnFav.addEventListener("click", añadirFav);
+                        listaTitulos.appendChild(item);
+                        listaTitulos.appendChild(btnFav);
+                    }
+                    espacio.appendChild(listaTitulos);
+
+
+
+                })
+                .catch(err => console.error('ERROR en fetch: ' + err));
+        }
+
+        function cambiarPag(e) {
+            pagina = e.target.id;
+            console.log('Pagina:' + pagina);
+
+        }
+
+
+        function añadirFav(event) {
+
+
+
+            const liElement = event.target.previousSibling;
+            const btnBorrar = document.createElement('button');
+            const btnDetalle = document.createElement('button');
+            const item = document.createElement('li');
+            const movieTitle = liElement.textContent;
+            const spanElement = document.createElement('span');
+            const listaPel = document.createElement('ul');
+
+            spanElement.textContent = movieTitle;
+            item.id = movieTitle.replace(/\s+/g, '-').toLowerCase();
+            item.appendChild(spanElement);
+            listaPel.appendChild(item);
+            divFav.appendChild(listaPel);
+            btnBorrar.textContent = 'Visto';
+            btnBorrar.style.cssText = "background-color: aqua; border: 1px solid black; margin: 10px;";
+            btnBorrar.addEventListener('click', borrarPelicula);
+            btnDetalle.textContent = 'Ver detalle';
+            btnDetalle.style.cssText = "background-color: aqua; border: 1px solid black; margin: 10px;";
+
+
+            function verDetalle() {
+                const titulo = encodeURIComponent(movieTitle);
+                const url = `nuevapagina.html?titulo=${titulo}`;
+                window.open(url, '_blank');
+            }
+
+            // Eliminar el evento anterior, si lo hay
+            if (btnDetalle.onclick) {
+                btnDetalle.removeEventListener('click', btnDetalle.onclick);
+
+            }
+
+
+            btnDetalle.onclick = verDetalle;
+
+            divFav.appendChild(btnBorrar);
+            divFav.appendChild(btnDetalle);
+
+
+            function borrarPelicula(event) {
+
+                const liElement = event.target.previousSibling;
+                const movieTitle = liElement.textContent;
+                const itemId = movieTitle.replace(/\s+/g, '-').toLowerCase();
+                const itemToRemove = document.getElementById(itemId);
+                itemToRemove.parentNode.removeChild(itemToRemove);
+                event.target.parentNode.removeChild(event.target);
+
+                btnDetalle.style.display = 'none';
+            }
+
+        }
+
+    </script>
+
+</body>
+
+</html>

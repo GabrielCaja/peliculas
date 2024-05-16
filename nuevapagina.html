@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="nuevapagina.css">
+    <title>Document</title>
+</head>
+
+<body>
+
+    <div id="contenido">
+        <div id="title">
+            <h1 ></h1>
+        </div>
+    
+        <div id="contenido1">
+            <div id="portada"></div>
+        </div>
+
+        <div id="contenido2">
+            <div >
+                <ul>Valoracion:</ul>
+                <li id="valoracion"></li>
+                
+            </div>
+            <div >
+                <ul>Fecha de publicación:</ul>
+                <li id="fecha"></li>
+            </div>
+            <div>
+                <ul>Resumen:</ul>
+                <li id="resumen"></li>
+            </div>
+        </div> 
+    </div>
+
+    
+    
+    
+    
+
+    <script>
+        const titulo = decodeURIComponent(window.location.search.replace('?titulo=', ''));
+        const imgPel = document.getElementById('portada');
+        const valPel = document.getElementById('valoracion');
+        const resPel = document.getElementById('resumen');
+        const fechaPel = document.getElementById('fecha');
+        document.querySelector('h1').textContent = titulo;
+        
+
+        fetch(`https://api.themoviedb.org/3/search/movie?api_key=989a7dc82aba988e71ea7e90c9d08a5c&language=es-ES&query=${titulo}`)
+                .then(res => res.json())
+                .then(res => {
+                    const resultados = res.results;
+                    const portada= resultados.map(resultado => resultado.poster_path);
+                    const valoracion = resultados.map(resultado => resultado.vote_average);
+                    const resumen = resultados.map(resultado => resultado.overview);
+                    const fecha = resultados.map(resultado => resultado.release_date);
+                    imgPel.innerHTML = `<img src="https://image.tmdb.org/t/p/w400/${portada}" alt="Portada" widht="150px">`;
+                    valPel.innerHTML = valoracion;
+                    fechaPel.innerHTML = fecha;
+                    resPel.innerHTML = resumen; 
+                            
+                })
+                .catch(err => console.log(err))
+                
+
+
+    </script>
+
+
+</body>
+
+</html>
